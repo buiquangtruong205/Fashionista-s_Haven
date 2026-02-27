@@ -69,7 +69,14 @@ exports.getHistory = async (req, res) => {
 exports.getOrderDetails = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const details = await Order.getOrderDetails(orderId);
+        const userId = req.user ? req.user.userID : null;
+        const role = req.user ? req.user.role : 'user';
+
+        const details = await Order.getOrderDetails(orderId, userId, role);
+        if (!details || details.length === 0) {
+            return res.status(404).json({ message: 'Order details not found or unauthorized' });
+        }
+
         res.json(details);
     } catch (error) {
         console.error(error);

@@ -25,17 +25,25 @@ const Order = {
         return rows;
     },
 
-    getOrderDetails: async (orderId) => {
-        const query = `
+    getOrderDetails: async (orderId, userId, role) => {
+        let query = `
             SELECT oi.*, p.name as product_name, v.colorID, v.sizeID, cl.name as color_name, sz.name as size_name
             FROM order_items oi
+            JOIN orders o ON oi.orderID = o.orderID
             JOIN product_variants v ON oi.variantID = v.variantID
             JOIN products p ON v.productID = p.productID
             LEFT JOIN colors cl ON v.colorID = cl.colorID
             LEFT JOIN sizes sz ON v.sizeID = sz.sizeID
             WHERE oi.orderID = $1
         `;
-        const { rows } = await db.query(query, [orderId]);
+        const params = [orderId];
+
+        if (role !== 'admin') {
+            query += ` AND o.userID = $2`;
+            params.push(userId);
+        }
+
+        const { rows } = await db.query(query, params);
         return rows;
     },
 

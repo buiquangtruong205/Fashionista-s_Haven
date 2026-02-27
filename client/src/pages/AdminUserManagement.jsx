@@ -56,7 +56,7 @@ const AdminUserManagement = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-slate-100 p-8 font-sans">
+        <div className="p-8">
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-10">
                     <div>
@@ -169,14 +169,6 @@ const AdminUserManagement = () => {
                     </div>
                 </div>
 
-                <div className="mt-8 text-center">
-                    <button
-                        onClick={() => window.location.href = '/'}
-                        className="text-slate-500 hover:text-white transition-colors text-sm font-medium"
-                    >
-                        &larr; Back to Home
-                    </button>
-                </div>
             </div>
         </div>
     );

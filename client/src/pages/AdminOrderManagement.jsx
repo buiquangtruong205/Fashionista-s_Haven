@@ -80,25 +80,8 @@ function AdminOrderManagement() {
     const pendingCount = orders.filter(o => o.status === 'pending').length;
     const deliveredCount = orders.filter(o => o.status === 'delivered').length;
 
-    const navigate = (to) => {
-        window.history.pushState({}, '', to);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    };
-
     return (
         <div style={s.container}>
-            {/* Navigation Bar */}
-            <nav style={s.nav}>
-                <span onClick={() => navigate('/')} style={s.navLogo}>Fashionista</span>
-                <div style={s.navLinks}>
-                    <span onClick={() => navigate('/')} style={s.navLink}>🏠 Trang chủ</span>
-                    <span onClick={() => navigate('/admin/products')} style={s.navLink}>🛍️ Sản phẩm</span>
-                    <span style={s.navLinkActive}>📦 Đơn hàng</span>
-                    <span onClick={() => navigate('/admin/users')} style={s.navLink}>👥 Users</span>
-                    <span onClick={() => navigate('/admin/login')} style={s.navLink}>🔑 Admin</span>
-                </div>
-            </nav>
-
             <h1 style={s.title}>📦 Quản lý Đơn hàng</h1>
 
             {message.text && (
@@ -198,12 +181,7 @@ function AdminOrderManagement() {
 }
 
 const s = {
-    container: { maxWidth: '80rem', margin: '0 auto', padding: '0 1.5rem 2rem', minHeight: '100vh', backgroundColor: '#0f172a', color: '#f1f5f9' },
-    nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' },
-    navLogo: { fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(to right, #22d3ee, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', cursor: 'pointer', fontStyle: 'italic' },
-    navLinks: { display: 'flex', gap: '1.5rem', alignItems: 'center' },
-    navLink: { color: '#94a3b8', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s', fontFamily: 'inherit' },
-    navLinkActive: { color: '#818cf8', fontWeight: 600, fontSize: '0.875rem', cursor: 'default' },
+    container: { maxWidth: '80rem', margin: '0 auto', padding: '2rem 1.5rem' },
     title: { fontSize: '1.875rem', fontWeight: 900, marginBottom: '1.5rem' },
     statCard: { backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '1rem', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' },
     tableWrapper: { overflowX: 'auto', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.1)' },

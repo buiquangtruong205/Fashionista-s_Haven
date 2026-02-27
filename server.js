@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+// const helmet = require('helmet');
+// const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -7,8 +9,26 @@ const port = process.env.PORT || 5000;
 
 const path = require('path');
 
-// Middlewares
-app.use(cors());
+// Security Middlewares
+// app.use(helmet());
+
+// Global Rate Limiting
+/*
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
+*/
+
+// CORS configuration
+const corsOptions = {
+    origin: process.env.CLIENT_URL || 'http://localhost:5173', // Restrict Origin
+    credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 

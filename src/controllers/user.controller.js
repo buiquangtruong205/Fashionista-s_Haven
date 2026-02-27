@@ -153,7 +153,9 @@ exports.updateProfile = async (req, res) => {
                 fullname: req.body.fullname || user.fullname,
                 phone: req.body.phone || user.phone,
                 address: req.body.address || user.address,
-                is_active: user.is_active
+                is_active: user.is_active,
+                otp: user.otp,
+                status: user.status
             };
 
             const success = await User.update(req.user.userID, updatedUser);
@@ -168,5 +170,119 @@ exports.updateProfile = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error updating profile' });
+    }
+};
+
+exports.requestPasswordChange = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: 'New passwords do not match' });
+        }
+
+        const user = await User.findById(req.user.userID);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await comparePassword(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect old password' });
+        }
+
+        const otp = generateOTP();
+        const hashedNewPassword = await hashPassword(newPassword);
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        await User.update(user.userID, {
+            ...user,
+            otp,
+            pending_password: hashedNewPassword,
+            otp_expiry: otpExpiry
+        });
+
+        // Send OTP via Email
+        try {
+            const message = `Your password change OTP is: ${otp}.\n\nThis code will expire in 10 minutes.`;
+            const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #333; text-align: center;">Security Verification</h2>
+                    <p>Hello <strong>${user.fullname}</strong>,</p>
+                    <p>You requested to change your password. Please use the following One-Time Password (OTP) to complete the process:</p>
+                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #d9534f; border-radius: 5px; margin: 20px 0;">
+                        ${otp}
+                    </div>
+                    <p>This code is valid for 10 minutes. If you did not request this, please change your password immediately or contact support.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777; text-align: center;">&copy; 2026 Fashionista's Haven Team</p>
+                </div>
+            `;
+
+            await sendEmail({
+                email: user.email,
+                subject: "Fashionista's Haven - Password Change OTP",
+                message: message,
+                html: html
+            });
+        } catch (emailError) {
+            console.error('Failed to send password change OTP email:', emailError.message);
+            return res.status(500).json({ message: 'Failed to send OTP email' });
+        }
+
+        res.json({ message: 'OTP sent to your email' });
+    } catch (error) {
+        console.error('PASSWORD CHANGE REQUEST ERROR:', error);
+        res.status(500).json({ message: 'Server error requesting password change', error: error.message });
+    }
+};
+
+exports.verifyPasswordChange = async (req, res) => {
+    const fs = require('fs');
+    const logPath = require('path').join(__dirname, '../../debug_log.txt');
+    const log = (msg) => fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
+
+    try {
+        const { otp } = req.body;
+        log(`Verifying OTP for user ID: ${req.user.userID}`);
+        const user = await User.findById(req.user.userID);
+
+        if (!user) {
+            log('User not found');
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        log(`User found. DB OTP: "${user.otp}", Req OTP: "${otp}", Expiry: ${user.otp_expiry}`);
+
+        if (!user.otp || !user.pending_password) {
+            log(`Missing fields. OTP: ${!!user.otp}, PendingPass: ${!!user.pending_password}`);
+            return res.status(400).json({ message: 'No pending password change request found' });
+        }
+
+        if (new Date() > new Date(user.otp_expiry)) {
+            log(`OTP Expired. Expiry: ${user.otp_expiry}, Current: ${new Date().toISOString()}`);
+            return res.status(400).json({ message: 'OTP has expired' });
+        }
+
+        if (String(user.otp).trim() !== String(otp).trim()) {
+            log(`OTP Mismatch. DB: "${user.otp}", Req: "${otp}"`);
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+
+        log('Applying new password...');
+        await User.update(user.userID, {
+            ...user,
+            password: user.pending_password,
+            otp: null,
+            pending_password: null,
+            otp_expiry: null
+        });
+
+        log('Password changed successfully');
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        log(`CRITICAL ERROR: ${error.message}\n${error.stack}`);
+        console.error('PASSWORD CHANGE VERIFY ERROR:', error);
+        res.status(500).json({ message: 'Server error verifying password change', error: error.message });
     }
 };

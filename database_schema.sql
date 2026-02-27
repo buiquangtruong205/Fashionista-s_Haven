@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     address TEXT,
     otp VARCHAR(10),
+    pending_password VARCHAR(255),
+    otp_expiry TIMESTAMP,
     status VARCHAR(20) DEFAULT 'active',
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
     is_active BOOLEAN DEFAULT TRUE,

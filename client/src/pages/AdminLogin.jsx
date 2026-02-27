@@ -27,7 +27,7 @@ const AdminLogin = () => {
             const { token, fullname } = data;
             localStorage.setItem('adminToken', token);
             localStorage.setItem('adminName', fullname);
-            window.location.href = '/admin/users';
+            window.location.href = '/';
         } catch (err) {
             setError(err.message || 'Login failed. Please check your credentials.');
         } finally {
@@ -36,7 +36,7 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6 font-sans">
+        <div className="flex items-center justify-center py-16 px-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

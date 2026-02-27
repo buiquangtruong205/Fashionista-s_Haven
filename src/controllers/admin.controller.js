@@ -109,18 +109,29 @@ exports.loginAdmin = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findByEmail(email);
-        if (user && user.role === 'admin' && (await comparePassword(password, user.password))) {
-            if (!user.is_active) {
-                return res.status(401).json({ message: 'Admin account is not activated. Please verify with OTP.' });
+        if (user) {
+            console.log(`Login attempt: user=${email}, role=${user.role}, is_active=${user.is_active}`);
+            const isMatch = await comparePassword(password, user.password);
+            console.log(`Password match: ${isMatch}`);
+
+            if (user.role === 'admin' && isMatch) {
+                if (!user.is_active) {
+                    console.log('Login failed: account not activated');
+                    return res.status(401).json({ message: 'Admin account is not activated. Please verify with OTP.' });
+                }
+                res.json({
+                    userID: user.userID,
+                    fullname: user.fullname,
+                    email: user.email,
+                    role: user.role,
+                    token: generateToken(user.userID),
+                });
+            } else {
+                console.log(`Login failed: role_match=${user.role === 'admin'}, password_match=${isMatch}`);
+                res.status(401).json({ message: 'Invalid admin credentials' });
             }
-            res.json({
-                userID: user.userID,
-                fullname: user.fullname,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user.userID),
-            });
         } else {
+            console.log(`Login failed: user ${email} not found`);
             res.status(401).json({ message: 'Invalid admin credentials' });
         }
     } catch (error) {

@@ -35,8 +35,8 @@ exports.webhook = async (req, res) => {
 
         // Update order and payment status
         if (status === 'completed') {
-            await db.query('UPDATE orders SET status = $1 WHERE "orderID" = $2', ['processing', orderID]);
-            await db.query('UPDATE payments SET status = $1, transaction_id = $2, paid_at = CURRENT_TIMESTAMP WHERE "orderID" = $3', ['completed', transaction_id, orderID]);
+            await db.query('UPDATE orders SET status = $1 WHERE orderID = $2', ['processing', orderID]);
+            await db.query('UPDATE payments SET status = $1, transaction_id = $2, paid_at = CURRENT_TIMESTAMP WHERE orderID = $3', ['completed', transaction_id, orderID]);
         }
 
         res.json({ received: true });

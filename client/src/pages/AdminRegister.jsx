@@ -177,7 +177,7 @@ const AdminRegister = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: '#0f172a', fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex items-center justify-center py-16 px-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

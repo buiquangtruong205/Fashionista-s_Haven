@@ -192,24 +192,8 @@ function AdminProductManagement() {
 
     const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-    const navigate = (to) => {
-        window.history.pushState({}, '', to);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    };
-
     return (
         <div style={pageStyles.container}>
-            {/* Navigation Bar */}
-            <nav style={pageStyles.nav}>
-                <span onClick={() => navigate('/')} style={pageStyles.navLogo}>Fashionista</span>
-                <div style={pageStyles.navLinks}>
-                    <span onClick={() => navigate('/')} style={pageStyles.navLink}>🏠 Trang chủ</span>
-                    <span style={pageStyles.navLinkActive}>🛍️ Sản phẩm</span>
-                    <span onClick={() => navigate('/admin/orders')} style={pageStyles.navLink}>📦 Đơn hàng</span>
-                    <span onClick={() => navigate('/admin/users')} style={pageStyles.navLink}>👥 Users</span>
-                    <span onClick={() => navigate('/admin/login')} style={pageStyles.navLink}>🔑 Admin</span>
-                </div>
-            </nav>
 
             <div style={pageStyles.header}>
                 <div>
@@ -449,12 +433,7 @@ function AdminProductManagement() {
 }
 
 const pageStyles = {
-    container: { maxWidth: '80rem', margin: '0 auto', padding: '0 1.5rem 2rem', minHeight: '100vh', backgroundColor: '#0f172a', color: '#f1f5f9' },
-    nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' },
-    navLogo: { fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(to right, #22d3ee, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', cursor: 'pointer', fontStyle: 'italic' },
-    navLinks: { display: 'flex', gap: '1.5rem', alignItems: 'center' },
-    navLink: { color: '#94a3b8', cursor: 'pointer', fontSize: '0.875rem', transition: 'color 0.2s', fontFamily: 'inherit' },
-    navLinkActive: { color: '#818cf8', fontWeight: 600, fontSize: '0.875rem', cursor: 'default' },
+    container: { maxWidth: '80rem', margin: '0 auto', padding: '2rem 1.5rem' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
     title: { fontSize: '1.875rem', fontWeight: 900, marginBottom: '0.25rem' },
     primaryBtn: { padding: '0.5rem 1.5rem', background: 'linear-gradient(to right, #4f46e5, #6366f1)', color: '#fff', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: '0.875rem' },
