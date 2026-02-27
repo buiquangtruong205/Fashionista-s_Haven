@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     address TEXT,
     otp VARCHAR(10),
+    status VARCHAR(20) DEFAULT 'active',
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
     is_active BOOLEAN DEFAULT TRUE,
     is_deleted BOOLEAN DEFAULT FALSE,
@@ -114,6 +115,19 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (categoryID) REFERENCES categories(categoryID) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+
+-- 9b. Bảng Product Images (nhiều ảnh cho 1 sản phẩm)
+CREATE TABLE IF NOT EXISTS product_images (
+    imageID SERIAL PRIMARY KEY,
+    productID INT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    alt_text VARCHAR(255),
+    sort_order INT DEFAULT 0,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (productID) REFERENCES products(productID) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images(productID);
 
 -- 10. Bảng Orders
 CREATE TABLE IF NOT EXISTS orders (

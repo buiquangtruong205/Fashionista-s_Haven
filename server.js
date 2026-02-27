@@ -5,9 +5,12 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+const path = require('path');
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 const userRoutes = require('./src/routes/user.routes');
@@ -28,8 +31,8 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.get('/', (req, res) => {
-    res.send('Shop Server is running...');
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(port, () => {

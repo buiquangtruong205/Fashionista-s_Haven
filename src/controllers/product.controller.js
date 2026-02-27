@@ -27,7 +27,8 @@ exports.getProductById = async (req, res) => {
         }
 
         const variants = await Product.getVariants(req.params.id);
-        res.json({ ...product, variants });
+        const images = await Product.getImages(req.params.id);
+        res.json({ ...product, variants, images });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching product details' });
@@ -41,8 +42,10 @@ exports.getProductBySlug = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        const variants = await Product.getVariants(product.productID);
-        res.json({ ...product, variants });
+        const productID = product.productID || product.productid;
+        const variants = await Product.getVariants(productID);
+        const images = await Product.getImages(productID);
+        res.json({ ...product, variants, images });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching product details' });

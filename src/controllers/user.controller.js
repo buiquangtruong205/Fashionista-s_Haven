@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const { hashPassword, comparePassword } = require('../utils/hashPassword');
 const { generateOTP } = require('../utils/generateOTP');
+const sendEmail = require('../utils/sendEmail');
 require('dotenv').config();
 
 const generateToken = (id) => {
@@ -29,14 +30,43 @@ exports.register = async (req, res) => {
             phone,
             address,
             otp,
+            status: 'pending',
             role: 'user'
         });
 
-        // In a real app, you would send the OTP via email here.
-        // For this demo, we'll return it in the response (NOT FOR PRODUCTION).
+        // Send OTP via Email
+        try {
+            const message = `Your registration OTP is: ${otp}.\n\nThis code will expire shortly.`;
+            const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #333; text-align: center;">Welcome to Fashionista's Haven</h2>
+                    <p>Hello <strong>${fullname}</strong>,</p>
+                    <p>Thank you for registering! Please use the following One-Time Password (OTP) to verify your account:</p>
+                    <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #d9534f; border-radius: 5px; margin: 20px 0;">
+                        ${otp}
+                    </div>
+                    <p>If you did not request this registration, please ignore this email.</p>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777; text-align: center;">&copy; 2026 Fashionista's Haven Team</p>
+                </div>
+            `;
+
+            await sendEmail({
+                email: email,
+                subject: "Fashionista's Haven - OTP Verification",
+                message: message,
+                html: html
+            });
+            console.log(`OTP sent to ${email}`);
+        } catch (emailError) {
+            console.error('Failed to send OTP email:', emailError.message);
+            // Don't fail the registration if email fails
+        }
+
         res.status(201).json({
-            message: 'User registered. Please verify with OTP.',
+            message: 'User registered successfully. Please check your email for the OTP.',
             userId,
+            email: email,
             otp: process.env.NODE_ENV === 'development' ? otp : undefined
         });
     } catch (error) {
@@ -77,7 +107,12 @@ exports.verifyOTP = async (req, res) => {
         const user = await User.findByEmail(email);
 
         if (user && user.otp === otp) {
-            await User.update(user.userID, { ...user, is_active: true });
+            await User.update(user.userID, {
+                ...user,
+                is_active: true,
+                status: 'active',
+                otp: null // Clear OTP
+            });
             res.json({ message: 'Account verified successfully' });
         } else {
             res.status(400).json({ message: 'Invalid OTP' });
