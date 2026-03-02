@@ -238,38 +238,26 @@ exports.requestPasswordChange = async (req, res) => {
 };
 
 exports.verifyPasswordChange = async (req, res) => {
-    const fs = require('fs');
-    const logPath = require('path').join(__dirname, '../../debug_log.txt');
-    const log = (msg) => fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
-
     try {
         const { otp } = req.body;
-        log(`Verifying OTP for user ID: ${req.user.userID}`);
         const user = await User.findById(req.user.userID);
 
         if (!user) {
-            log('User not found');
             return res.status(400).json({ message: 'User not found' });
         }
 
-        log(`User found. DB OTP: "${user.otp}", Req OTP: "${otp}", Expiry: ${user.otp_expiry}`);
-
         if (!user.otp || !user.pending_password) {
-            log(`Missing fields. OTP: ${!!user.otp}, PendingPass: ${!!user.pending_password}`);
             return res.status(400).json({ message: 'No pending password change request found' });
         }
 
         if (new Date() > new Date(user.otp_expiry)) {
-            log(`OTP Expired. Expiry: ${user.otp_expiry}, Current: ${new Date().toISOString()}`);
             return res.status(400).json({ message: 'OTP has expired' });
         }
 
         if (String(user.otp).trim() !== String(otp).trim()) {
-            log(`OTP Mismatch. DB: "${user.otp}", Req: "${otp}"`);
             return res.status(400).json({ message: 'Invalid OTP' });
         }
 
-        log('Applying new password...');
         await User.update(user.userID, {
             ...user,
             password: user.pending_password,
@@ -278,10 +266,8 @@ exports.verifyPasswordChange = async (req, res) => {
             otp_expiry: null
         });
 
-        log('Password changed successfully');
         res.json({ message: 'Password changed successfully' });
     } catch (error) {
-        log(`CRITICAL ERROR: ${error.message}\n${error.stack}`);
         console.error('PASSWORD CHANGE VERIFY ERROR:', error);
         res.status(500).json({ message: 'Server error verifying password change', error: error.message });
     }
